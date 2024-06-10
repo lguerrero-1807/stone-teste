@@ -37,7 +37,7 @@ module "nodes_teste" {
   k8s_version             = local.k8s_version
   cluster_vpc             = module.network_teste.cluster_vpc
   private_subnet_ids      = module.network_teste.private_subnets
-  nodes_instances_types   = ["t3a.micro"]
+  nodes_instances_types   = ["t3a.small"]
   auto_scale_options      = {
     desired = 1
     min     = 1
@@ -55,4 +55,13 @@ module "nodes_teste" {
     scale_down_period     = 300
     scale_down_threshold  = 40
   }
+}
+
+module "ingress_nginx" {
+  source                     = "./helm_ingress_nginx"
+  depends_on                 = [module.eks_teste]
+  endpoint                   = module.eks_teste.endpoint
+  certificate_authority_data = module.eks_teste.certificate_authority_data
+  token                      = data.aws_eks_cluster_auth.cluster.token
+  public_subnet_ids          = module.network_teste.public_subnets
 }
