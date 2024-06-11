@@ -1,5 +1,5 @@
 locals {
-  cluster_name  = "stone_teste"
+  cluster_name  = "stone-teste"
   aws_region    = "us-east-1"
   k8s_version   = "1.30"
   cidr_block    = "10.0.0.0/16"
@@ -64,4 +64,18 @@ module "ingress_nginx" {
   certificate_authority_data = module.eks_teste.certificate_authority_data
   token                      = data.aws_eks_cluster_auth.cluster.token
   public_subnet_ids          = module.network_teste.public_subnets
+}
+
+module "prometheus" {
+  source                     = "git::https://github.com/lguerrero-1807/blueprint-modules.git//eks/prometheus"
+  endpoint                   = module.eks_teste.endpoint
+  certificate_authority_data = module.eks_teste.certificate_authority_data
+  token                      = data.aws_eks_cluster_auth.cluster.token
+}
+
+module "grafana" {
+  source = "git::https://github.com/lguerrero-1807/blueprint-modules.git//eks/grafana"
+  endpoint                   = module.eks_teste.endpoint
+  certificate_authority_data = module.eks_teste.certificate_authority_data
+  token                      = data.aws_eks_cluster_auth.cluster.token
 }

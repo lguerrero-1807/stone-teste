@@ -19,3 +19,13 @@ provider "helm" {
     token                  = data.aws_eks_cluster_auth.cluster.token
   }
 }
+
+terraform {
+  backend "s3" {
+    bucket         = "terraform-stone-teste"
+    key            = "eks/stone-teste.tfstate"
+    dynamodb_table = "terraform-locks"
+    region         = "us-east-1"
+    encrypt        = true
+  }
+}
