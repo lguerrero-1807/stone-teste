@@ -37,9 +37,9 @@ module "nodes_teste" {
   k8s_version             = local.k8s_version
   cluster_vpc             = module.network_teste.cluster_vpc
   private_subnet_ids      = module.network_teste.private_subnets
-  nodes_instances_types   = ["t3a.small"]
+  nodes_instances_types   = ["t3a.medium"]
   auto_scale_options      = {
-    desired = 2
+    desired = 1
     min     = 1
     max     = 3
   }
