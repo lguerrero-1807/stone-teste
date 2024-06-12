@@ -39,7 +39,7 @@ module "nodes_teste" {
   private_subnet_ids      = module.network_teste.private_subnets
   nodes_instances_types   = ["t3a.small"]
   auto_scale_options      = {
-    desired = 1
+    desired = 2
     min     = 1
     max     = 3
   }
