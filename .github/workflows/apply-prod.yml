@@ -1,4 +1,4 @@
-name: Apply-prod
+name: Terraform Apply
 
 on:
   push:
@@ -9,19 +9,14 @@ on:
       - main
 
 jobs:
-  terraform:
-    name: Terraform Apply
+  terraform_validate:
+    name: Validate Terraform
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.0.0
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -29,18 +24,55 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Check Terraform Formatting
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Correct Terraform Formatting
+        if: failure()
+        run: terraform fmt --recursive
+
+      - name: Validar código do Terraform
+        run: |
+          terraform init
+          terraform validate
+
+  plan_apply_terraform:
+    name: Terraform Plan and Apply (Staging)
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # need this for OIDC
+      contents: read
+    needs: terraform_validate
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v1
+
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Validate
-        run: terraform validate
-
       - name: Terraform Plan
-        if: ${{ success() }}
         run: terraform plan
 
       - name: Terraform Apply
-        if: ${{ success() && github.ref == 'refs/heads/main' }}
+        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
