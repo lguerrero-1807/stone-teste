@@ -72,10 +72,3 @@ module "prometheus" {
   certificate_authority_data = module.eks_teste.certificate_authority_data
   token                      = data.aws_eks_cluster_auth.cluster.token
 }
-
-module "grafana" {
-  source = "git::https://github.com/lguerrero-1807/blueprint-modules.git//eks/grafana"
-  endpoint                   = module.eks_teste.endpoint
-  certificate_authority_data = module.eks_teste.certificate_authority_data
-  token                      = data.aws_eks_cluster_auth.cluster.token
-}
